@@ -1,0 +1,16 @@
+name: annotation-pipeline
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - python=3.8.10
+  - snakemake=6.4.1
+  - samtools=1.12
+  - picard=2.25.6
+  - bwa=0.7.17
+  - bcftools=1.12
+  - qualimap=2.2.2a
+  - trimmomatic=0.39
+  - cutadapt=3.4
+  - fastqc=0.11.9
+  - multiqc=1.10.1
