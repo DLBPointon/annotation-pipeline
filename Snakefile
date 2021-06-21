@@ -27,7 +27,6 @@ rule all_output:
         expand("rawdata/reference/{ref_prefix}.pac", ref_prefix = REF_SAMPLE),
         expand("rawdata/reference/{ref_prefix}.sa", ref_prefix = REF_SAMPLE),
         expand("{read}_{ref_prefix}.vcf", read = TRIM_SAMPLES, ref_prefix = REF_PREFIX),
-        expand("alignment_1/{read}_{ref_prefix}.sorted.aligned.bam", read = TRIM_SAMPLES, ref_prefix = REF_PREFIX)
 
 rule QC_fastqc:
     input:
