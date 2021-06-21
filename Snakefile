@@ -15,7 +15,7 @@ directories = ["qc_1", "qc_2", "qc_3"]
 
 BWA_OUT = ["amb","ann","bwt","pac","sa"]
 
-rule all:
+rule all_output:
     input:
         expand("qc_1/{samples}_fastqc.html",samples=SAMPLES),
         expand("qc_1/{samples}_fastqc.zip",samples=SAMPLES),
