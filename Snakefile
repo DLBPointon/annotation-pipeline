@@ -1,13 +1,16 @@
 # Stick these in a config
 
 SAMPLES = ["SRR622461_1", "SRR622461_2"]
+TRIM_SAMPLES = ["SRR622461"]
+
 REF_SAMPLE = ["GRCh38_latest_genomic.fna"]
 REF_PREFIX = ["GRCh38"]
-TRIM_SAMPLES = ["SRR622461"]
+
 TRIM_OUT  = ["rawdata/sample_data/SRR622461_1.paired.fastq",
              "rawdata/sample_data/SRR622461_2.paired.fastq",
              "rawdata/sample_data/SRR622461_1.unpaired.fastq",
              "rawdata/sample_data/SRR622461_2.unpaired.fastq"]
+
 TRIM_FR = ["1", "2"]
 TRIM_PAIR = ["paired","unpaired"]
 
