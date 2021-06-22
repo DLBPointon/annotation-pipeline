@@ -22,8 +22,8 @@ rule all_output:
     input:
         expand("qc_1/{samples}_fastqc.html",samples=SAMPLES),
         expand("qc_1/{samples}_fastqc.zip",samples=SAMPLES),
-        expand("qc_2/{read}_{no}.{pair}.fastq_fastqc.html", read = TRIM_SAMPLES, no = TRIM_FR, pair = TRIM_PAIR),
-        expand("qc_2/{read}_{no}.{pair}.fastq_fastqc.zip", read = TRIM_SAMPLES, no = TRIM_FR, pair = TRIM_PAIR),
+        expand("qc_2/{read}_{no}.{pair}_fastqc.html", read = TRIM_SAMPLES, no = TRIM_FR, pair = TRIM_PAIR),
+        expand("qc_2/{read}_{no}.{pair}_fastqc.zip", read = TRIM_SAMPLES, no = TRIM_FR, pair = TRIM_PAIR),
         expand("rawdata/reference/{ref_prefix}.amb", ref_prefix = REF_SAMPLE),
         expand("rawdata/reference/{ref_prefix}.ann", ref_prefix = REF_SAMPLE),
         expand("rawdata/reference/{ref_prefix}.bwt", ref_prefix = REF_SAMPLE),
@@ -63,11 +63,9 @@ rule step_1_trimmomatic: # Testing
     priority: 1
     threads: 4
     shell:
-        "trimmomatic PE {params.threads} -phred33 {params.tlog} {input.reads1} {input.reads2}"
+        "trimmomatic PE {params.threads} -phred33 {input.reads1} {input.reads2}"
         " {output.paired1} {output.unpaired1} {output.paired2} {output.unpaired2}"
         " {params.lead} {params.trail} {params.sliding} {params.mlen}"
-
-
 
 rule QC_fastqc_trimmed:
     input:
@@ -76,14 +74,14 @@ rule QC_fastqc_trimmed:
         unpaired1=rules.step_1_trimmomatic.output.unpaired1,
         unpaired2=rules.step_1_trimmomatic.output.unpaired2
     output:
-        "qc_2/{read}_{no}.{pair}.fastq_fastqc.html",
-        "qc_2/{read}_{no}.{pair}.fastq_fastqc.zip",
+        "qc_2/{read}_{no}.{pair}_fastqc.html",
+        "qc_2/{read}_{no}.{pair}_fastqc.zip",
     params:
         q="--quiet"
     priority: 2
     threads: 4
     shell:
-        "fastqc -t 8 -o qc_2/ {input}"
+        "echo {output} && fastqc -t 8 -o qc_2/ {input}"
 
 rule step_2_ref_index:
     input:
@@ -101,15 +99,15 @@ rule step_2_ref_index:
 
 rule step_3_alignment:
     input:
-        rules.step_1_trimmomatic.output,
+        reads1="rawdata/sample_data/{read}_1.paired.fastq",
+        reads2="rawdata/sample_data/{read}_2.paired.fastq",
         ref_seq="rawdata/reference/{ref_prefix}_latest_genomic.fna"
     output:
         "alignment_1/{read}_{ref_prefix}.aligned.bam",
     priority: 3
     threads: 8
     shell:
-        "bwa mem -R '@RG\tID:1\tLB:library\tPL:Illumina\tPU:lane1\tSM:human'"
-        " {input.ref_seq} {input.ref_seq} {input[0][0]} {input[0][1]} | samtools view -bS - > {output}"
+        "bwa mem -R'@RG\\tID:1\\tLB:library\\tPL:Illumina\\tPU:lane1\\tSM:human' {input.ref_seq} {input.reads1} {input.reads2}| samtools view -bS - > {output}"
 
 rule step_4_sortbam:
     input:
