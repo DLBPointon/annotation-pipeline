@@ -4,12 +4,28 @@ This repository will make up the evidence for the Bioinformatics Software and To
 of the ARU/Sanger BSc Bioinformatics Year 2 Course.
 
 ### Installation of pipeline
-This can be acheived through the use of:
+This can be achieved through the use of:
 
 `conda create --file environment.yml`
 
-However this can take quite some time and personally was faster
-installing it all seperately.
+However, this can take quite some time and personally was faster
+installing it all separately.
+
+### Usage
+
+Local Machine Usage
+1 - Clone repo
+
+2 - `cd annotation-pipeline`
+
+3 - `snakemake --cores 8`
+
+Sanger Farm
+1 - Clone repo
+
+2 - `cd annotation-pipeline`
+
+3 - 
 
 ### Data
 Sample Data comes from the Utah family platinum read set.
