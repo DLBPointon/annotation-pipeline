@@ -38,3 +38,7 @@ Mapped against GRCH38.p.15:
 ```
 https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/001/405/GCA_000001405.15_GRCh38/GCA_000001405.15_GRCh38_genomic.fna.gz
 ```
+
+It has been suggested to swap out freebayes for GATK.
+SNPeff for variant annotation and filtering.
+Move the snakemake pipeline over to a yaml oriented snakemake (yy5 pipes as example) for better control.
