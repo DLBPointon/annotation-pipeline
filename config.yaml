@@ -1,0 +1,60 @@
+input_data_1: rawdata/sample_data/SRR622461_1.fastq
+input_data_2: rawdata/sample_data/SRR622461_2.fastq
+
+input_list: [rawdata/sample_data/SRR622461_1.fastq,
+             rawdata/sample_data/SRR622461_2.fastq]
+
+paired_input_list: [rawdata/sample_data/SRR622461_1.paired.fastq,
+                    rawdata/sample_data/SRR622461_2.paired.fastq]
+
+reference_data: rawdata/reference/GRCh38_latest_genomic.fna
+working_dir: ./
+conda_env:
+
+analysis:
+  QC_1_fastqc:
+    output_dir: qc_data/
+    output_list: [
+      [QC_1_fastqc/SRR622461_1_fastq.html, QC_1_fastqc/SRR622461_1_fastq.zip],
+      [QC_1_fastqc/SRR622461_2_fastq.zip, QC_1_fastqc/SRR622461_2_fastq.html]
+    ]
+
+  s1_trimmomatic:
+    paired_output: [
+        s1_trimmomatic/SRR622461_1.paired.fastq,
+        s1_trimmomatic/SRR622461_2.paired.fastq
+    ]
+    unpaired_output: [
+        s1_trimmomatic/SRR622461_1.unpaired.fastq,
+        s1_trimmomatic/SRR622461_2.unpaired.fastq
+    ]
+    threads: -threads 4
+    tlog: -trimlog ./trim.log
+    lead: LEADING:10
+    trail: TRAILING:10
+    sliding: SLIDINGWINDOW:4:20
+    mlen: MINLEN:36
+
+  QC_2_fastqc:
+    output_dir: qc_data/
+    output_list: [
+      [QC_2_fastqc/SRR622461_1.paired.fastq.zip, QC_2_fastqc/SRR622461_1.paired.fastq.html],
+      [QC_2_fastqc/SRR622461_1.unpaired.fastq.zip, QC_2_fastqc/SRR622461_1.unpaired.fastq.html],
+      [QC_2_fastqc/SRR622461_2.paired.fastq.zip, QC_2_fastqc/SRR622461_2.paired.fastq.html],
+      [QC_2_fastqc/SRR622461_2.unpaired.fastq.zip, QC_2_fastqc/SRR622461_2.unpaired.fastq.html]
+    ]
+
+  s2_ref_index:
+    output_list: [
+        rawdata/reference/GRCh38_latest_genomic.fna.amb,
+        rawdata/reference/GRCh38_latest_genomic.fna.ann,
+        rawdata/reference/GRCh38_latest_genomic.fna.bwt,
+        rawdata/reference/GRCh38_latest_genomic.fna.pac,
+        rawdata/reference/GRCh38_latest_genomic.fna.sa
+                   ]
+
+  s3_alignment:
+    output: s3_alignment/SRR622461_GRCh38.aligned.bam
+
+  s4_sortbam:
+    output: s4_sortbam/SRR622461_GRCh38.aligned.sort.bam
