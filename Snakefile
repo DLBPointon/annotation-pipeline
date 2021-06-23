@@ -5,6 +5,7 @@ TRIM_SAMPLES = ["SRR622461"]
 
 REF_SAMPLE = ["GRCh38_latest_genomic.fna"]
 REF_PREFIX = ["GRCh38"]
+# Roll back to 37 to improve
 
 TRIM_OUT  = ["rawdata/sample_data/SRR622461_1.paired.fastq",
              "rawdata/sample_data/SRR622461_2.paired.fastq",
@@ -107,7 +108,9 @@ rule step_3_alignment:
     priority: 3
     threads: 8
     shell:
-        "bwa mem -R'@RG\\tID:1\\tLB:library\\tPL:Illumina\\tPU:lane1\\tSM:human' {input.ref_seq} {input.reads1} {input.reads2}| samtools view -bS - > {output}"
+        # Bowtie
+        "bwa mem -R'@RG\\tID:1\\tLB:library\\tPL:Illumina\\tPU:lane1\\tSM:human'"
+        " {input.ref_seq} {input.reads1} {input.reads2}| samtools view -bS - > {output}"
 
 rule step_4_sortbam:
     input:
@@ -130,3 +133,10 @@ rule step_6_freebayes:
     threads: 8
     shell:
         "freebayes -f {input[0]} {input[1]} > something.vcf"
+
+    # GATK replace here
+    # grep vcf file for gene variants
+    # strip away low chance variants
+    # Compare to the dbsnp and other database
+    # suggested i use SnpEFF
+
