@@ -15,8 +15,8 @@ analysis:
   QC_1_fastqc:
     output_dir: qc_data/
     output_list: [
-      [QC_1_fastqc/SRR622461_1_fastq.html, QC_1_fastqc/SRR622461_1_fastq.zip],
-      [QC_1_fastqc/SRR622461_2_fastq.zip, QC_1_fastqc/SRR622461_2_fastq.html]
+      [QC_1_fastqc/SRR622461_1_fastqc.html, QC_1_fastqc/SRR622461_1_fastqc.zip],
+      [QC_1_fastqc/SRR622461_2_fastqc.zip, QC_1_fastqc/SRR622461_2_fastqc.html]
     ]
 
   s1_trimmomatic:
@@ -38,10 +38,10 @@ analysis:
   QC_2_fastqc:
     output_dir: qc_data/
     output_list: [
-      [QC_2_fastqc/SRR622461_1.paired.fastq.zip, QC_2_fastqc/SRR622461_1.paired.fastq.html],
-      [QC_2_fastqc/SRR622461_1.unpaired.fastq.zip, QC_2_fastqc/SRR622461_1.unpaired.fastq.html],
-      [QC_2_fastqc/SRR622461_2.paired.fastq.zip, QC_2_fastqc/SRR622461_2.paired.fastq.html],
-      [QC_2_fastqc/SRR622461_2.unpaired.fastq.zip, QC_2_fastqc/SRR622461_2.unpaired.fastq.html]
+      [QC_2_fastqc/SRR622461_1.paired.fastqc.zip, QC_2_fastqc/SRR622461_1.paired.fastqc.html],
+      [QC_2_fastqc/SRR622461_1.unpaired.fastqc.zip, QC_2_fastqc/SRR622461_1.unpaired.fastqc.html],
+      [QC_2_fastqc/SRR622461_2.paired.fastqc.zip, QC_2_fastqc/SRR622461_2.paired.fastqc.html],
+      [QC_2_fastqc/SRR622461_2.unpaired.fastqc.zip, QC_2_fastqc/SRR622461_2.unpaired.fastqc.html]
     ]
 
   s2_ref_index:
