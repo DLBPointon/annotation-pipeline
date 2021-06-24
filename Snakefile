@@ -53,7 +53,7 @@ rule QC_1_fastqc:
 
     run:
         for i in input:
-            shell("fastqc -t 8 -o qc_data/ {i}")
+            shell("fastqc -t 8 -o QC_1_fastqc/ {i}")
 
 rule s1_trimmomatic:
     input:
