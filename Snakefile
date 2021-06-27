@@ -39,11 +39,17 @@ for key, value in analysis.items():
 
 rule all:
     input:
+        # Branch 1
         analysis["QC_1_fastqc"]["output_list"],
 
+        # Branch 2
         analysis["QC_2_fastqc"]["output_list"],
 
-        "s4_sort_done"
+        # Branch 3
+        analysis['s7_align_metrics']['output'],
+
+        # Main Pipeline
+        "s6_mrkdupes/s6_done"
 
 rule QC_1_fastqc:
     input:
@@ -59,7 +65,7 @@ rule s1_trimmomatic:
     input:
         config['input_list']
     output:
-        "s1_trimm_done",
+        "s1_trimmomatic/s1_trimm_done",
         paired = analysis['s1_trimmomatic']['paired_output'],
         unpaired = analysis['s1_trimmomatic']['unpaired_output'],
         list = zip(
@@ -80,12 +86,12 @@ rule s1_trimmomatic:
 
 rule QC_2_fastqc:
     input:
-        rules.s1_trimmomatic.output
+        rules.s1_trimmomatic.output.list
     output:
         analysis["QC_2_fastqc"]["output_list"]
     run:
-        for i in input[1]:
-            shell("fastqc -t 8 -o qc_data/ {i}")
+        for i in input:
+            shell("fastqc -t 8 -o QC_2_fastqc/ {i}")
 
 rule s2_ref_index:
     input:
@@ -93,9 +99,9 @@ rule s2_ref_index:
         reference
     output:
         analysis['s2_ref_index']['output_list'],
-        "s2_ref_done"
+        "s2_ref_index/s2_ref_done"
     shell:
-        "bwa index -a {input[1]};"
+        "bwa index {input[1]};"
         " touch s2_ref_index/s2_ref_done"
 
 rule s3_alignment:
@@ -105,19 +111,79 @@ rule s3_alignment:
         rules.s2_ref_index.output[1]
     output:
         analysis['s3_alignment']['output'],
-        "s3_alignment_done"
+        "s3_alignment/s3_alignment_done"
     shell:
         # Possibly switch this out for bowtie
         "bwa mem -R'@RG\\tID:1\\tLB:library\\tPL:Illumina\\tPU:lane1\\tSM:human'"
-        " {input[0]} {input[1]} | samtools view -bS - > {output[0]};"
+        " {input[0]} {input[1]} | samtools view -bS - > {output[0]} -@4;"
         " touch s3_alignment/s3_alignment_done"
 
 rule s4_sortbam:
     input:
+        "s3_alignment/s3_alignment_done",
         rules.s3_alignment.output
     output:
-        "s4_sort_done",
+        "s4_sortbam/s4_sort_done",
         analysis['s4_sortbam']['output']
     shell:
-        "samtools sort {input} -o {output};"
+        "samtools sort {input[1]} -o {output[1]} -@4;"
         " touch s4_sortbam/s4_sort_done"
+
+rule s5_index_bam:
+    input:
+        rules.s4_sortbam.output[0],
+        rules.s4_sortbam.output[1]
+    output:
+        analysis['s5_index_bam']['output'],
+        "s5_index_bam/s5_index_bam_done"
+    shell:
+        "samtools index {input[1]} -@4; "
+        "touch {output[1]}"
+
+# This is where variant calling begins
+rule s6_mrkdupes:
+    input:
+        rules.s5_index_bam.output[1],
+        rules.s4_sortbam.output[1]
+    output:
+        analysis['s6_mrkdupes']['output'],
+        analysis['s6_mrkdupes']['output'] + '.bai',
+        analysis['s6_mrkdupes']['mrkd_output'],
+        "s6_mrkdupes/s6_done"
+    shell:
+        "picard MarkDuplicates -I {input[1]} -O {output[0]} -M {output[1]};"
+        "samtools index {output[0]} -@4;"
+        "touch {output[2]}"
+
+rule s7_align_metrics:
+    input:
+        reference,
+        rules.s6_mrkdupes.output[0],
+        rules.s6_mrkdupes.output[3]
+    output:
+        analysis['s7_align_metrics']['output']
+    shell:
+        "picard CollectAlignmentSummaryMetrics -R {reference} -I {input[1]} -O {output}"
+
+rule s8_picard_dictionary:
+    input:
+        reference,
+        "s6_mrkdupes/s6_done"
+    output:
+        reference + '.dict',
+        's8_picard_dict/s8_dict_done'
+    shell:
+        "picard CreateSequenceDictionary -R {reference} -O {output};"
+        "touch s8_dict_done"
+
+rule s9_GATK_vcf:
+    input:
+        "s6_mrkdupes/s6_done",
+        's8_picard_dict/s8_dict_done',
+        reference,
+        rules.s6_mrkdupes.output[0]
+    output:
+        analysis['s9_GATK_vcf']['output']
+    shell:
+        "gatk HaplotypeCaller -R {reference} -I {input[3]} -O {output} -ERC GVCF;"
+        "touch s9_GATK_vcf/s9_done"

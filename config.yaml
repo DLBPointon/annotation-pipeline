@@ -21,12 +21,12 @@ analysis:
 
   s1_trimmomatic:
     paired_output: [
-        s1_trimmomatic/SRR622461_1.paired.fastq,
-        s1_trimmomatic/SRR622461_2.paired.fastq
+        s1_trimmomatic/SRR622461_1.paired.trimmed.fastq,
+        s1_trimmomatic/SRR622461_2.paired.trimmed.fastq
     ]
     unpaired_output: [
-        s1_trimmomatic/SRR622461_1.unpaired.fastq,
-        s1_trimmomatic/SRR622461_2.unpaired.fastq
+        s1_trimmomatic/SRR622461_1.unpaired.trimmed.fastq,
+        s1_trimmomatic/SRR622461_2.unpaired.trimmed.fastq
     ]
     threads: -threads 4
     tlog: -trimlog ./trim.log
@@ -38,10 +38,10 @@ analysis:
   QC_2_fastqc:
     output_dir: qc_data/
     output_list: [
-      [QC_2_fastqc/SRR622461_1.paired.fastqc.zip, QC_2_fastqc/SRR622461_1.paired.fastqc.html],
-      [QC_2_fastqc/SRR622461_1.unpaired.fastqc.zip, QC_2_fastqc/SRR622461_1.unpaired.fastqc.html],
-      [QC_2_fastqc/SRR622461_2.paired.fastqc.zip, QC_2_fastqc/SRR622461_2.paired.fastqc.html],
-      [QC_2_fastqc/SRR622461_2.unpaired.fastqc.zip, QC_2_fastqc/SRR622461_2.unpaired.fastqc.html]
+      [QC_2_fastqc/SRR622461_1.paired.trimmed_fastqc.zip, QC_2_fastqc/SRR622461_1.paired.trimmed_fastqc.html],
+      [QC_2_fastqc/SRR622461_1.unpaired.trimmed_fastqc.zip, QC_2_fastqc/SRR622461_1.unpaired.trimmed_fastqc.html],
+      [QC_2_fastqc/SRR622461_2.paired.trimmed_fastqc.zip, QC_2_fastqc/SRR622461_2.paired.trimmed_fastqc.html],
+      [QC_2_fastqc/SRR622461_2.unpaired.trimmed_fastqc.zip, QC_2_fastqc/SRR622461_2.unpaired.trimmed_fastqc.html]
     ]
 
   s2_ref_index:
@@ -58,3 +58,19 @@ analysis:
 
   s4_sortbam:
     output: s4_sortbam/SRR622461_GRCh38.aligned.sort.bam
+
+  s5_index_bam:
+    output: s4_sortbam/SRR622461_GRCh38.aligned.sort.bam.bai
+
+  s6_mrkdupes:
+    output: s6_mrkdupes/SRR622461_GRCh38.al.s.mkdup.bam
+    mrkd_output: s6_mrkdupes/marked_dupes_metrics.txt
+
+  s7_align_metrics:
+    output: s7_align_metrics/output.txt
+
+  s8_picard_dict:
+    output: rawdata/reference/GRCh38_latest_genomic.dict
+
+  s9_GATK_vcf:
+    output: s9_GATK_vcf/SRR622461_GRCh38.asmrkd.vcf.gz
