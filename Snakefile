@@ -183,6 +183,7 @@ rule s9_GATK_vcf:
         reference,
         rules.s6_mrkdupes.output[0]
     output:
+        's9_GATK_vcf/s9_done',
         analysis['s9_GATK_vcf']['output']
     shell:
         "gatk HaplotypeCaller -R {reference} -I {input[3]} -O {output} -ERC GVCF;"
@@ -190,7 +191,18 @@ rule s9_GATK_vcf:
 
 rule s10_excise_gene:
     input:
-        "s9_GATK_vcf",
-        rules.s9_GATK_vcf.output
+        "s9_GATK_vcf/s9_done",
+        rules.s9_GATK_vcf.output[1],
+        reference,
+        config['search_chr'],
+        config['search_coords']
     output:
-        analysis['s10_excise_gene']['output']
+        analysis['s10_excise_gene']['output'],
+        analysis['s10_excise_gene']['output_zip'],
+        analysis['s10_excise_gene']['output_idx'],
+        analysis['s10_excise_gene']['output_txt']
+    shell:
+        "grep -F 'chromosome 10' {reference} > chromosome_code.txt;"
+        "python3 get_scaff_names.py;"
+        "bcftools view s9_GATK_vcf/alignment.vcf.gz -r $(cat chro_output.txt) > testing.vcf;"
+        "bcftools view -i '%QUAL>20' testing.vcf >testingp2.vcf"
