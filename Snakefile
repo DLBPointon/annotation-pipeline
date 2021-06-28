@@ -187,3 +187,10 @@ rule s9_GATK_vcf:
     shell:
         "gatk HaplotypeCaller -R {reference} -I {input[3]} -O {output} -ERC GVCF;"
         "touch s9_GATK_vcf/s9_done"
+
+rule s10_excise_gene:
+    input:
+        "s9_GATK_vcf",
+        rules.s9_GATK_vcf.output
+    output:
+        analysis['s10_excise_gene']['output']

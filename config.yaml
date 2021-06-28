@@ -7,6 +7,9 @@ input_list: [rawdata/sample_data/SRR622461_1.fastq,
 paired_input_list: [rawdata/sample_data/SRR622461_1.paired.fastq,
                     rawdata/sample_data/SRR622461_2.paired.fastq]
 
+search_chr: 'chromosome 10'
+search_coords: 90000000-95000000
+
 reference_data: rawdata/reference/GRCh38_latest_genomic.fna
 working_dir: ./
 conda_env:
@@ -74,3 +77,6 @@ analysis:
 
   s9_GATK_vcf:
     output: s9_GATK_vcf/SRR622461_GRCh38.asmrkd.vcf.gz
+
+  s10_excise_gene:
+    output: s10_excise_gene/searchsite.vcf
