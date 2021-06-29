@@ -16,7 +16,6 @@ conda_envs:
 
 analysis:
   QC_1_fastqc:
-    output_dir: qc_data/
     output_list: [
       [QC_1_fastqc/SRR622461_1_fastqc.html, QC_1_fastqc/SRR622461_1_fastqc.zip],
       [QC_1_fastqc/SRR622461_2_fastqc.zip, QC_1_fastqc/SRR622461_2_fastqc.html]
@@ -39,13 +38,15 @@ analysis:
     mlen: MINLEN:36
 
   QC_2_fastqc:
-    output_dir: qc_data/
     output_list: [
       [QC_2_fastqc/SRR622461_1.paired.trimmed_fastqc.zip, QC_2_fastqc/SRR622461_1.paired.trimmed_fastqc.html],
       [QC_2_fastqc/SRR622461_1.unpaired.trimmed_fastqc.zip, QC_2_fastqc/SRR622461_1.unpaired.trimmed_fastqc.html],
       [QC_2_fastqc/SRR622461_2.paired.trimmed_fastqc.zip, QC_2_fastqc/SRR622461_2.paired.trimmed_fastqc.html],
       [QC_2_fastqc/SRR622461_2.unpaired.trimmed_fastqc.zip, QC_2_fastqc/SRR622461_2.unpaired.trimmed_fastqc.html]
     ]
+
+  QC_3_multiqc:
+    output: QC_3_multiqc/
 
   s2_ref_index:
     output_list: [

@@ -93,6 +93,15 @@ rule QC_2_fastqc:
         for i in input:
             shell("fastqc -t 8 -o QC_2_fastqc/ {i}")
 
+rule QC_multiqc:
+    input:
+        rules.QC_1_fastqc.output,
+        rules.QC_2_fastqc.output
+    output:
+        analysis['QC_3_multiqc']['output']
+    shell:
+        "multiqc {input} -o {output}"
+
 rule s2_ref_index:
     input:
         rules.s1_trimmomatic.output[0],
@@ -104,6 +113,7 @@ rule s2_ref_index:
         "bwa index {input[1]};"
         " touch s2_ref_index/s2_ref_done"
 
+# Alignment stats to feed into MultiQC
 rule s3_alignment:
     input:
         reference,
@@ -113,7 +123,7 @@ rule s3_alignment:
         analysis['s3_alignment']['output'],
         "s3_alignment/s3_alignment_done"
     shell:
-        # Possibly switch this out for bowtie
+        # Possibly switch this out for bowtie <--
         "bwa mem -R'@RG\\tID:1\\tLB:library\\tPL:Illumina\\tPU:lane1\\tSM:human'"
         " {input[0]} {input[1]} | samtools view -bS - > {output[0]} -@4;"
         " touch s3_alignment/s3_alignment_done"
@@ -206,3 +216,7 @@ rule s10_excise_gene:
         "python3 get_scaff_names.py;"
         "bcftools view s9_GATK_vcf/alignment.vcf.gz -r $(cat chro_output.txt) > testing.vcf;"
         "bcftools view -i '%QUAL>20' testing.vcf >testingp2.vcf"
+
+# Next rule will finish the process by annotating the vcf
+    # I should also test VEP
+#'java -Xmx4g -jar snpEff/snpEff.jar GRCh38.99 testanno.vcf > annotated.vcf'

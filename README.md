@@ -25,7 +25,14 @@ Sanger Farm
 
 2 - `cd annotation-pipeline`
 
-3 - NOT RUN YET
+3 - NOT RUN YET - Individual steps are being tested
+
+### Currently in Repo
+environment.yml - a list of packages used in this project
+multiqc_report.html - a report of all fastqc report, this should soon include stats for samtools flagstats, bwa and bcftools too
+testanno.vcf - a vcf before attempted annotation
+get_scaff_names.py - used along with "grep -F 'chromosome 10' > components.txt " to return a file of component names used to cut down the original vcf size to focus on region of interest.
+annoated.vcf - a vcf from my first attempt using snpeff - chromosomes not found (I'm assuming a naming of scaffolds issue from reference)
 
 ### Data
 Sample Data comes from the Utah family platinum read set.
