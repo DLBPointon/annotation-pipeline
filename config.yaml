@@ -7,10 +7,10 @@ input_list: [rawdata/sample_data/SRR622461_1.fastq,
 paired_input_list: [rawdata/sample_data/SRR622461_1.paired.fastq,
                     rawdata/sample_data/SRR622461_2.paired.fastq]
 
-search_chr: 'chromosome 10'
+search_chr: 'chr10'
 search_coords: 90000000-95000000
 
-reference_data: rawdata/reference/GRCh38_latest_genomic.fna
+reference_data: rawdata/reference/GCA_000001405.15_GRCh38_full_analysis_set.fna
 working_dir: ./
 conda_envs:
 
@@ -50,11 +50,11 @@ analysis:
 
   s2_ref_index:
     output_list: [
-        rawdata/reference/GRCh38_latest_genomic.fna.amb,
-        rawdata/reference/GRCh38_latest_genomic.fna.ann,
-        rawdata/reference/GRCh38_latest_genomic.fna.bwt,
-        rawdata/reference/GRCh38_latest_genomic.fna.pac,
-        rawdata/reference/GRCh38_latest_genomic.fna.sa
+        rawdata/reference/GCA_000001405.15_GRCh38_full_analysis_set.fna.amb,
+        rawdata/reference/GCA_000001405.15_GRCh38_full_analysis_set.fna.ann,
+        rawdata/reference/GCA_000001405.15_GRCh38_full_analysis_set.fna.bwt,
+        rawdata/reference/GCA_000001405.15_GRCh38_full_analysis_set.fna.pac,
+        rawdata/reference/GCA_000001405.15_GRCh38_full_analysis_set.fna.sa
                    ]
 
   s3_alignment:
@@ -74,13 +74,14 @@ analysis:
     output: s7_align_metrics/output.txt
 
   s8_picard_dict:
-    output: rawdata/reference/GRCh38_latest_genomic.dict
+    output: rawdata/reference/GCA_000001405.15_GRCh38_full_analysis_set.dict
 
   s9_GATK_vcf:
     output: s9_GATK_vcf/SRR622461_GRCh38.asmrkd.vcf.gz
 
   s10_excise_gene:
-    output: s10_excise_gene/searchsite.vcf
-    output_zip: s10_excise_gene/searchsite.vcf.gz
-    output_idx: s10_excise_gene/searchsite.vcf.gz.tbi
-    output_txt: s10_excise_gene/component_list.txt
+    output: s10_excise_gene/chr10.vcf
+
+  s11_filter_qual:
+    output: s11_filter_qual/chr10.filtered.vcf
+    qual: '%QUAL>20'

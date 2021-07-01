@@ -48,8 +48,11 @@ rule all:
         # Branch 3
         analysis['s7_align_metrics']['output'],
 
+        # Branch 4 - multiqc
+        analysis['QC_3_multiqc']['output'],
+
         # Main Pipeline
-        "s6_mrkdupes/s6_done"
+        's11_filter_qual/s11_done'
 
 rule QC_1_fastqc:
     input:
@@ -108,9 +111,11 @@ rule s2_ref_index:
         reference
     output:
         analysis['s2_ref_index']['output_list'],
-        "s2_ref_index/s2_ref_done"
+        "s2_ref_index/s2_ref_done",
+        reference + 'fai'
     shell:
         "bwa index {input[1]};"
+        "samtools faidx {input[1]};"
         " touch s2_ref_index/s2_ref_done"
 
 # Alignment stats to feed into MultiQC
@@ -118,14 +123,16 @@ rule s3_alignment:
     input:
         reference,
         rules.s1_trimmomatic.output.paired,
-        rules.s2_ref_index.output[1]
+        "s2_ref_index/s2_ref_done"
     output:
         analysis['s3_alignment']['output'],
         "s3_alignment/s3_alignment_done"
+    params:
+        threads = 4
     shell:
         # Possibly switch this out for bowtie <--
-        "bwa mem -R'@RG\\tID:1\\tLB:library\\tPL:Illumina\\tPU:lane1\\tSM:human'"
-        " {input[0]} {input[1]} | samtools view -bS - > {output[0]} -@4;"
+        "bwa mem -t {params.threads} -R'@RG\\tID:1\\tLB:library\\tPL:Illumina\\tPU:lane1\\tSM:human'"
+        " {input[0]} {input[1]} | samtools view -bS - > {output[0]} -@{params.threads};"
         " touch s3_alignment/s3_alignment_done"
 
 rule s4_sortbam:
@@ -135,8 +142,10 @@ rule s4_sortbam:
     output:
         "s4_sortbam/s4_sort_done",
         analysis['s4_sortbam']['output']
+    params:
+        threads = 4
     shell:
-        "samtools sort {input[1]} -o {output[1]} -@4;"
+        "samtools sort {input[1]} -o {output[1]} -@{params.threads};"
         " touch s4_sortbam/s4_sort_done"
 
 rule s5_index_bam:
@@ -146,8 +155,10 @@ rule s5_index_bam:
     output:
         analysis['s5_index_bam']['output'],
         "s5_index_bam/s5_index_bam_done"
+    params:
+        threads = 4
     shell:
-        "samtools index {input[1]} -@4; "
+        "samtools index {input[1]} -@{params.threads}; "
         "touch {output[1]}"
 
 # This is where variant calling begins
@@ -160,10 +171,12 @@ rule s6_mrkdupes:
         analysis['s6_mrkdupes']['output'] + '.bai',
         analysis['s6_mrkdupes']['mrkd_output'],
         "s6_mrkdupes/s6_done"
+    params:
+        threads = 4
     shell:
-        "picard MarkDuplicates -I {input[1]} -O {output[0]} -M {output[1]};"
-        "samtools index {output[0]} -@4;"
-        "touch {output[2]}"
+        "picard MarkDuplicates -I {input[1]} -O {output[0]} -M {output[2]};"
+        "samtools index {output[0]} -@{params.threads};"
+        "touch {output[3]}"
 
 rule s7_align_metrics:
     input:
@@ -180,11 +193,11 @@ rule s8_picard_dictionary:
         reference,
         "s6_mrkdupes/s6_done"
     output:
-        reference + '.dict',
+        analysis['s8_picard_dict']['output'],
         's8_picard_dict/s8_dict_done'
     shell:
-        "picard CreateSequenceDictionary -R {reference} -O {output};"
-        "touch s8_dict_done"
+        "picard CreateSequenceDictionary -R {reference} -O {output[0]};"
+        "touch {output[1]}"
 
 rule s9_GATK_vcf:
     input:
@@ -196,26 +209,35 @@ rule s9_GATK_vcf:
         's9_GATK_vcf/s9_done',
         analysis['s9_GATK_vcf']['output']
     shell:
-        "gatk HaplotypeCaller -R {reference} -I {input[3]} -O {output} -ERC GVCF;"
-        "touch s9_GATK_vcf/s9_done"
+        "gatk HaplotypeCaller -R {reference} -I {input[3]} -O {output[1]} -ERC GVCF;"
+        "touch {output[0]}"
 
-rule s10_excise_gene:
+rule s10_excise_chr:
     input:
         "s9_GATK_vcf/s9_done",
         rules.s9_GATK_vcf.output[1],
         reference,
-        config['search_chr'],
-        config['search_coords']
+    params:
+        config['search_chr']
     output:
         analysis['s10_excise_gene']['output'],
-        analysis['s10_excise_gene']['output_zip'],
-        analysis['s10_excise_gene']['output_idx'],
-        analysis['s10_excise_gene']['output_txt']
+        "s10_excise_gene/s10_done"
     shell:
-        "grep -F 'chromosome 10' {reference} > chromosome_code.txt;"
-        "python3 get_scaff_names.py;"
-        "bcftools view s9_GATK_vcf/alignment.vcf.gz -r $(cat chro_output.txt) > testing.vcf;"
-        "bcftools view -i '%QUAL>20' testing.vcf >testingp2.vcf"
+        "bcftools view {input[1]} -r {params} > s10_excise_gene/chr10filtered.vcf;"
+        "touch {output[1]}"
+
+rule s11_filter_qual:
+    input:
+        "s10_excise_gene/s10_done",
+        rules.s10_excise_chr.output[0]
+    params:
+        analysis['s11_filter_qual']['qual']
+    output:
+        analysis['s11_filter_qual']['output'],
+        's11_filter_qual/s11_done'
+    shell:
+        "bcftools view -i {params} {input[1]} > {output[0]};"
+        "touch {output[1]}"
 
 # Next rule will finish the process by annotating the vcf
     # I should also test VEP
