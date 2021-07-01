@@ -20,8 +20,6 @@ Local Machine Usage
 
 3 - `snakemake --cores 8`
 
-Run time: 13:08 -  
-
 Sanger Farm
 1 - Clone repo
 
