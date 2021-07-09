@@ -1,17 +1,10 @@
 input_data_1: rawdata/sample_data/SRR622461_1.fastq
 input_data_2: rawdata/sample_data/SRR622461_2.fastq
 
-input_list: [rawdata/sample_data/SRR622461_1.fastq,
-             rawdata/sample_data/SRR622461_2.fastq]
-
-paired_input_list: [rawdata/sample_data/SRR622461_1.paired.fastq,
-                    rawdata/sample_data/SRR622461_2.paired.fastq]
-
-search_chr: 'chr10'
-search_coords: 90000000-95000000
+search_chr: -r 'chr10'
 
 reference_data: rawdata/reference/GCA_000001405.15_GRCh38_full_analysis_set.fna
-working_dir: ./
+
 conda_envs:
 
 analysis:
@@ -39,14 +32,14 @@ analysis:
 
   QC_2_fastqc:
     output_list: [
-      [QC_2_fastqc/SRR622461_1.paired.trimmed_fastqc.zip, QC_2_fastqc/SRR622461_1.paired.trimmed_fastqc.html],
-      [QC_2_fastqc/SRR622461_1.unpaired.trimmed_fastqc.zip, QC_2_fastqc/SRR622461_1.unpaired.trimmed_fastqc.html],
-      [QC_2_fastqc/SRR622461_2.paired.trimmed_fastqc.zip, QC_2_fastqc/SRR622461_2.paired.trimmed_fastqc.html],
-      [QC_2_fastqc/SRR622461_2.unpaired.trimmed_fastqc.zip, QC_2_fastqc/SRR622461_2.unpaired.trimmed_fastqc.html]
+      QC_2_fastqc/SRR622461_1.paired.trimmed_fastqc.zip, QC_2_fastqc/SRR622461_1.paired.trimmed_fastqc.html,
+      QC_2_fastqc/SRR622461_1.unpaired.trimmed_fastqc.zip, QC_2_fastqc/SRR622461_1.unpaired.trimmed_fastqc.html,
+      QC_2_fastqc/SRR622461_2.paired.trimmed_fastqc.zip, QC_2_fastqc/SRR622461_2.paired.trimmed_fastqc.html,
+      QC_2_fastqc/SRR622461_2.unpaired.trimmed_fastqc.zip, QC_2_fastqc/SRR622461_2.unpaired.trimmed_fastqc.html
     ]
 
   QC_3_multiqc:
-    output: QC_3_multiqc/
+    output: QC_3_multiqc/multiqc_report.html
 
   s2_ref_index:
     output_list: [
@@ -84,4 +77,12 @@ analysis:
 
   s11_filter_qual:
     output: s11_filter_qual/chr10.filtered.vcf
-    qual: '%QUAL>20'
+    qual: 'QUAL>20'
+
+  s12_annotate_vcf:
+    output: s12_annotate_vcf/chr10.filt.annotated.vcf
+    output_csv: s12_annotate_vcf/snpEff.csv
+
+  s13_bgzip_index:
+    output_bg: s13_bgzip_index/chr10.filt.annotated.vcf.gz
+    output_tbi: s13_bgzip_index/chr10.filt.annotated.vcf.gz.tbi

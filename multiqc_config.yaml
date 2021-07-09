@@ -1,0 +1,16 @@
+fastqc_config:
+  fastqc_theoretical_gc: "hg38_genome"
+
+trimmomatic:
+  contents: Trimmomatic
+  shared: true
+
+samtools/flagstat:
+  contents: >
+    in total (QC-passed reads + QC-failed
+    reads)
+  shared: true
+
+snpeff:
+  contents: SnpEff_version
+  max_filesize: 5000000

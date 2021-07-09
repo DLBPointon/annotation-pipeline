@@ -3,13 +3,15 @@
 Snakemake annotation pipeline
 ==============================
 - USAGE
-    snakemake --configfile config.yaml --cores 1
+    snakemake --configfile config.yaml --cores 10
 
 dp24
 """
 
 import os
 import errno
+
+singularity: "shub://sschmeier/biotools:latest"
 
 # Define the common variables
 reference = config['reference_data']
@@ -39,38 +41,31 @@ for key, value in analysis.items():
 
 rule all:
     input:
-        # Branch 1
-        analysis["QC_1_fastqc"]["output_list"],
-
-        # Branch 2
-        analysis["QC_2_fastqc"]["output_list"],
-
-        # Branch 3
+        # Branch 1 - Produces alignment statistics
         analysis['s7_align_metrics']['output'],
 
-        # Branch 4 - multiqc
-        analysis['QC_3_multiqc']['output'],
+        # Branch 2 - multiqc brings together FastQC reports
+        'QC_3_multiqc/QC_3_done',
 
         # Main Pipeline
-        's11_filter_qual/s11_done'
+        's13_bgzip_index/s13_done'
 
 rule QC_1_fastqc:
     input:
-        config['input_list']
+        reads_1,
+        reads_2
     output:
         analysis["QC_1_fastqc"]["output_list"]
 
-    run:
-        for i in input:
-            shell("fastqc -t 8 -o QC_1_fastqc/ {i}")
+    shell:
+        "fastqc -t 2 -o QC_1_fastqc/ {input}"
 
 rule s1_trimmomatic:
     input:
-        config['input_list']
+        reads_1,
+        reads_2
     output:
         "s1_trimmomatic/s1_trimm_done",
-        paired = analysis['s1_trimmomatic']['paired_output'],
-        unpaired = analysis['s1_trimmomatic']['unpaired_output'],
         list = zip(
             analysis['s1_trimmomatic']['paired_output'],
             analysis['s1_trimmomatic']['unpaired_output']
@@ -91,19 +86,21 @@ rule QC_2_fastqc:
     input:
         rules.s1_trimmomatic.output.list
     output:
+        # May need to be changed so that multiqc doesn't take in .zip folder
         analysis["QC_2_fastqc"]["output_list"]
-    run:
-        for i in input:
-            shell("fastqc -t 8 -o QC_2_fastqc/ {i}")
+    shell:
+        "fastqc -t 8 -o QC_2_fastqc/ {input}"
 
 rule QC_multiqc:
     input:
         rules.QC_1_fastqc.output,
         rules.QC_2_fastqc.output
     output:
-        analysis['QC_3_multiqc']['output']
+        #analysis['QC_3_multiqc']['output'],
+        "QC_3_multiqc/QC_3_done"
     shell:
-        "multiqc {input} -o {output}"
+        "multiqc {input};"
+        "touch QC_3_multiqc/QC_3_done"
 
 rule s2_ref_index:
     input:
@@ -112,17 +109,17 @@ rule s2_ref_index:
     output:
         analysis['s2_ref_index']['output_list'],
         "s2_ref_index/s2_ref_done",
-        reference + 'fai'
+        reference + '.fai'
     shell:
         "bwa index {input[1]};"
         "samtools faidx {input[1]};"
         " touch s2_ref_index/s2_ref_done"
 
-# Alignment stats to feed into MultiQC
+# Alignment stats should to feed into MultiQC, although results don't look right
 rule s3_alignment:
     input:
         reference,
-        rules.s1_trimmomatic.output.paired,
+        analysis['s1_trimmomatic']['paired_output'],
         "s2_ref_index/s2_ref_done"
     output:
         analysis['s3_alignment']['output'],
@@ -161,7 +158,6 @@ rule s5_index_bam:
         "samtools index {input[1]} -@{params.threads}; "
         "touch {output[1]}"
 
-# This is where variant calling begins
 rule s6_mrkdupes:
     input:
         rules.s5_index_bam.output[1],
@@ -223,7 +219,7 @@ rule s10_excise_chr:
         analysis['s10_excise_gene']['output'],
         "s10_excise_gene/s10_done"
     shell:
-        "bcftools view {input[1]} -r {params} > s10_excise_gene/chr10filtered.vcf;"
+        "bcftools view {input[1]} {params} > {output[0]};"
         "touch {output[1]}"
 
 rule s11_filter_qual:
@@ -236,9 +232,30 @@ rule s11_filter_qual:
         analysis['s11_filter_qual']['output'],
         's11_filter_qual/s11_done'
     shell:
-        "bcftools view -i {params} {input[1]} > {output[0]};"
+        "bcftools view -i 'QUAL>20' {input[1]} > {output[0]};"
         "touch {output[1]}"
 
-# Next rule will finish the process by annotating the vcf
-    # I should also test VEP
-#'java -Xmx4g -jar snpEff/snpEff.jar GRCh38.99 testanno.vcf > annotated.vcf'
+rule s12_annotate_vcf:
+    input:
+        's11_filter_qual/s11_done',
+        rules.s11_filter_qual.output[0]
+    output:
+        analysis['s12_annotate_vcf']['output'],
+        analysis['s12_annotate_vcf']['output_csv'],
+        's12_annotate_vcf/s12_done'
+    shell:
+        'java -Xmx4g -jar snpEff/snpEff.jar GRCh38.99 {input[1]} > {output[0]} -csvStats {output[1]} -lof;'
+        'touch {output[2]}'
+
+rule s13_bgzip_index:
+    input:
+        rules.s12_annotate_vcf.output[2],
+        rules.s12_annotate_vcf.output[0]
+    output:
+        analysis['s13_bgzip_index']['output_bg'],
+        analysis['s13_bgzip_index']['output_tbi'],
+        's13_bgzip_index/s13_done'
+    shell:
+        "bgzip -c {input[1]} > {output[0]};"
+        "tabix -p vcf {output[0]};"
+        "touch {output[2]}"
