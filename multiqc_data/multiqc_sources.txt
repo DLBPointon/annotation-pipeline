@@ -1,0 +1,7 @@
+Module	Section	Sample Name	Source
+FastQC	all_sections	SRR622461_1	/home/dlbp/annotation-pipeline/QC_1_fastqc/SRR622461_1_fastqc.zip
+FastQC	all_sections	SRR622461_2	/home/dlbp/annotation-pipeline/QC_1_fastqc/SRR622461_2_fastqc.zip
+FastQC	all_sections	SRR622461_1.paired	/home/dlbp/annotation-pipeline/QC_2_fastqc/SRR622461_1.paired.trimmed_fastqc.zip
+FastQC	all_sections	SRR622461_1.unpaired	/home/dlbp/annotation-pipeline/QC_2_fastqc/SRR622461_1.unpaired.trimmed_fastqc.zip
+FastQC	all_sections	SRR622461_2.paired	/home/dlbp/annotation-pipeline/QC_2_fastqc/SRR622461_2.paired.trimmed_fastqc.zip
+FastQC	all_sections	SRR622461_2.unpaired	/home/dlbp/annotation-pipeline/QC_2_fastqc/SRR622461_2.unpaired.trimmed_fastqc.zip
