@@ -11,8 +11,6 @@ dp24
 import os
 import errno
 
-singularity: "shub://sschmeier/biotools:latest"
-
 # Define the common variables
 reference = config['reference_data']
 reads_1 = config['input_data_1']
