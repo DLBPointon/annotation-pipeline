@@ -69,7 +69,7 @@ rule s1_trimmomatic:
         list = zip(
             analysis['s1_trimmomatic']['paired_output'],
             analysis['s1_trimmomatic']['unpaired_output']
-        ),
+        )
 
     params:
         threads = trim['threads'],
@@ -212,7 +212,7 @@ rule s10_excise_chr:
     input:
         "s9_GATK_vcf/s9_done",
         rules.s9_GATK_vcf.output[1],
-        reference,
+        reference
     params:
         config['search_chr']
     output:
@@ -232,7 +232,7 @@ rule s11_filter_qual:
         analysis['s11_filter_qual']['output'],
         's11_filter_qual/s11_done'
     shell:
-        "bcftools view -i 'QUAL>20' {input[1]} > {output[0]};"
+        "bcftools view -i '{params}' {input[1]} > {output[0]};"
         "touch {output[1]}"
 
 rule s12_annotate_vcf:

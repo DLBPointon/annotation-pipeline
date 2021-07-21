@@ -1,0 +1,7 @@
+__default__:
+  memory: 10000
+  queue: 'basement'
+  resources: "\"select[mem>10000] rusage[mem=10000] span[hosts=1]\""
+  output: "{params.myDir}/{rule}.out"
+  error: "{params.myDir}/{rule}.err"
+  jobname: "{rule}"

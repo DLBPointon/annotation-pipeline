@@ -7,12 +7,12 @@ reference_data: rawdata/reference/GCA_000001405.15_GRCh38_full_analysis_set.fna
 
 conda_envs:
 
+working_dir: './'
+
 analysis:
   QC_1_fastqc:
-    output_list: [
-      [QC_1_fastqc/SRR622461_1_fastqc.html, QC_1_fastqc/SRR622461_1_fastqc.zip],
-      [QC_1_fastqc/SRR622461_2_fastqc.zip, QC_1_fastqc/SRR622461_2_fastqc.html]
-    ]
+    output_list: [QC_1_fastqc/SRR622461_1_fastqc.html, QC_1_fastqc/SRR622461_1_fastqc.zip,
+                  QC_1_fastqc/SRR622461_2_fastqc.zip, QC_1_fastqc/SRR622461_2_fastqc.html]
 
   s1_trimmomatic:
     paired_output: [
