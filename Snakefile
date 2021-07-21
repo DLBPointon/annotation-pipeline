@@ -2,10 +2,14 @@
 ==============================
 Snakemake annotation pipeline
 ==============================
-- USAGE
-    snakemake --configfile config.yaml --cores 10
+- USAGE - locally - whilst using the annotation environment
+    snakemake --configfile config_file.yaml --cores 10
 
-dp24
+- USAGE - cluster - whilst using the annotation environment
+    snakemake --configfile config_file.yaml --cores 10 --cluster-config
+    ./cluster.yaml --cluster "bsub -q {cluster.queue} -oo {cluster.output}
+    -eo {cluster.error} -M {cluster.memory} -R {cluster.resources} -J {cluster.jobname}"
+    -j 10 --use-conda
 """
 
 import os
@@ -19,6 +23,7 @@ mydir = config['working_dir']
 analysis = config['analysis']
 trim = analysis['s1_trimmomatic']
 
+# Print for confirmation
 print(f'Reference: \t{reference}\n'
       f'Reads 1: \t{reads_1}\n'
       f'Reads 2: \t{reads_2}')
@@ -84,7 +89,6 @@ rule QC_2_fastqc:
     input:
         rules.s1_trimmomatic.output.list
     output:
-        # May need to be changed so that multiqc doesn't take in .zip folder
         analysis["QC_2_fastqc"]["output_list"]
     shell:
         "fastqc -t 8 -o QC_2_fastqc/ {input}"
@@ -94,7 +98,7 @@ rule QC_multiqc:
         rules.QC_1_fastqc.output,
         rules.QC_2_fastqc.output
     output:
-        #analysis['QC_3_multiqc']['output'],
+        # Output is sent to CWD
         "QC_3_multiqc/QC_3_done"
     shell:
         "multiqc {input};"
@@ -123,7 +127,7 @@ rule s3_alignment:
         analysis['s3_alignment']['output'],
         "s3_alignment/s3_alignment_done"
     params:
-        threads = 4
+        threads = config['samtool_thread']
     shell:
         # Possibly switch this out for bowtie <--
         "bwa mem -t {params.threads} -R'@RG\\tID:1\\tLB:library\\tPL:Illumina\\tPU:lane1\\tSM:human'"
@@ -138,7 +142,7 @@ rule s4_sortbam:
         "s4_sortbam/s4_sort_done",
         analysis['s4_sortbam']['output']
     params:
-        threads = 4
+        threads = config['samtool_thread']
     shell:
         "samtools sort {input[1]} -o {output[1]} -@{params.threads};"
         " touch s4_sortbam/s4_sort_done"
@@ -151,7 +155,7 @@ rule s5_index_bam:
         analysis['s5_index_bam']['output'],
         "s5_index_bam/s5_index_bam_done"
     params:
-        threads = 4
+        threads = config['samtool_thread']
     shell:
         "samtools index {input[1]} -@{params.threads}; "
         "touch {output[1]}"
@@ -166,7 +170,7 @@ rule s6_mrkdupes:
         analysis['s6_mrkdupes']['mrkd_output'],
         "s6_mrkdupes/s6_done"
     params:
-        threads = 4
+        threads = config['samtool_thread']
     shell:
         "picard MarkDuplicates -I {input[1]} -O {output[0]} -M {output[2]};"
         "samtools index {output[0]} -@{params.threads};"
@@ -242,7 +246,8 @@ rule s12_annotate_vcf:
         analysis['s12_annotate_vcf']['output_csv'],
         's12_annotate_vcf/s12_done'
     shell:
-        'java -Xmx4g -jar snpEff/snpEff.jar GRCh38.99 {input[1]} > {output[0]} -csvStats {output[1]} -lof;'
+        'java -Xmx4g -jar snpEff/snpEff.jar GRCh38.99 {input[1]} > {output[0]}'
+        ' -csvStats {output[1]} -lof;'
         'touch {output[2]}'
 
 rule s13_bgzip_index:

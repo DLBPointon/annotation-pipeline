@@ -9,6 +9,8 @@ conda_envs:
 
 working_dir: './'
 
+samtool_thread: 4
+
 analysis:
   QC_1_fastqc:
     output_list: [

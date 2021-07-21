@@ -8,8 +8,6 @@ snakemake pipeline
 
 import argparse
 import yaml
-import io
-import sys
 
 
 def parseargs():
@@ -43,6 +41,7 @@ def parseargs():
                         help="Conda Library Location",
                         default='None')
     parser.add_argument("-threads", "--threads",
+                        dest='threads',
                         help="Threads used by trimmomatic and samtools",
                         default='4')
     parser.add_argument("-tlog", "--TRIMMER-LOG",
@@ -103,6 +102,8 @@ def main():
     base_yaml['input_data_2'] = args.SAMPLE_2
     base_yaml['reference_data'] = args.REFERENCE
 
+    base_yaml['samtool_thread'] = args.threads
+
     base_yaml['working_dir']= args.wd
 
     base_yaml['search_chr'] = f'-r "chr{args.REGION}"'
@@ -112,11 +113,11 @@ def main():
     # ANALYSIS CHUNK
     anal = base_yaml['analysis']
     sample_a = args.SAMPLE_1.split('/')[-1]
-    print(sample_a)
     sample_1 = sample_a.split('.')
     sample_b = args.SAMPLE_2.split('/')[-1]
     sample_2 = sample_b.split('.')
 
+    # ----- QC steps
     anal['QC_1_fastqc']['output_list'] = ['QC_1_fastqc/' + sample_1[0] + '_fastqc.html',
                                           'QC_1_fastqc/' + sample_1[0] + '_fastqc.zip',
                                           'QC_1_fastqc/' + sample_2[0] + '_fastqc.html',
@@ -134,7 +135,6 @@ def main():
     # Ignore QC_3 as it doesn't need changing
 
     # ----- S1
-
     anal['s1_trimmomatic']['paired_output'] = ['s1_trimmomatic/' + sample_1[0] + '.paired.trimmed.fastq',
                                                's1_trimmomatic/' + sample_2[0] + '.paired.trimmed.fastq']
 
@@ -203,7 +203,7 @@ def main():
     anal['s13_bgzip_index']['output_bg'] = f's13_bgzip_index/chr{args.REGION}.filt.annotated.vcf.gz'
     anal['s13_bgzip_index']['output_tbi'] = f's13_bgzip_index/chr{args.REGION}.filt.annotated.vcf.gz.tbi'
 
-    #print(base_yaml)
+    # print(base_yaml)
     write_yaml(base_yaml, args.cfile)
 
 
