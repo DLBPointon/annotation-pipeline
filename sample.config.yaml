@@ -1,0 +1,88 @@
+input_data_1: rawdata/sample_data/SRR622461_1.fastq
+input_data_2: rawdata/sample_data/SRR622461_2.fastq
+
+search_chr: -r 'chr10'
+
+reference_data: rawdata/reference/GCA_000001405.15_GRCh38_full_analysis_set.fna
+
+conda_envs:
+
+analysis:
+  QC_1_fastqc:
+    output_list: [
+      [QC_1_fastqc/SRR622461_1_fastqc.html, QC_1_fastqc/SRR622461_1_fastqc.zip],
+      [QC_1_fastqc/SRR622461_2_fastqc.zip, QC_1_fastqc/SRR622461_2_fastqc.html]
+    ]
+
+  s1_trimmomatic:
+    paired_output: [
+        s1_trimmomatic/SRR622461_1.paired.trimmed.fastq,
+        s1_trimmomatic/SRR622461_2.paired.trimmed.fastq
+    ]
+    unpaired_output: [
+        s1_trimmomatic/SRR622461_1.unpaired.trimmed.fastq,
+        s1_trimmomatic/SRR622461_2.unpaired.trimmed.fastq
+    ]
+    threads: -threads 4
+    tlog: -trimlog ./trim.log
+    lead: LEADING:10
+    trail: TRAILING:10
+    sliding: SLIDINGWINDOW:4:20
+    mlen: MINLEN:36
+
+  QC_2_fastqc:
+    output_list: [
+      QC_2_fastqc/SRR622461_1.paired.trimmed_fastqc.zip, QC_2_fastqc/SRR622461_1.paired.trimmed_fastqc.html,
+      QC_2_fastqc/SRR622461_1.unpaired.trimmed_fastqc.zip, QC_2_fastqc/SRR622461_1.unpaired.trimmed_fastqc.html,
+      QC_2_fastqc/SRR622461_2.paired.trimmed_fastqc.zip, QC_2_fastqc/SRR622461_2.paired.trimmed_fastqc.html,
+      QC_2_fastqc/SRR622461_2.unpaired.trimmed_fastqc.zip, QC_2_fastqc/SRR622461_2.unpaired.trimmed_fastqc.html
+    ]
+
+  QC_3_multiqc:
+    output: QC_3_multiqc/multiqc_report.html
+
+  s2_ref_index:
+    output_list: [
+        rawdata/reference/GCA_000001405.15_GRCh38_full_analysis_set.fna.amb,
+        rawdata/reference/GCA_000001405.15_GRCh38_full_analysis_set.fna.ann,
+        rawdata/reference/GCA_000001405.15_GRCh38_full_analysis_set.fna.bwt,
+        rawdata/reference/GCA_000001405.15_GRCh38_full_analysis_set.fna.pac,
+        rawdata/reference/GCA_000001405.15_GRCh38_full_analysis_set.fna.sa
+                   ]
+
+  s3_alignment:
+    output: s3_alignment/SRR622461_GRCh38.aligned.bam
+
+  s4_sortbam:
+    output: s4_sortbam/SRR622461_GRCh38.aligned.sort.bam
+
+  s5_index_bam:
+    output: s4_sortbam/SRR622461_GRCh38.aligned.sort.bam.bai
+
+  s6_mrkdupes:
+    output: s6_mrkdupes/SRR622461_GRCh38.al.s.mkdup.bam
+    mrkd_output: s6_mrkdupes/marked_dupes_metrics.txt
+
+  s7_align_metrics:
+    output: s7_align_metrics/output.txt
+
+  s8_picard_dict:
+    output: rawdata/reference/GCA_000001405.15_GRCh38_full_analysis_set.dict
+
+  s9_GATK_vcf:
+    output: s9_GATK_vcf/SRR622461_GRCh38.asmrkd.vcf.gz
+
+  s10_excise_gene:
+    output: s10_excise_gene/chr10.vcf
+
+  s11_filter_qual:
+    output: s11_filter_qual/chr10.filtered.vcf
+    qual: 'QUAL>20'
+
+  s12_annotate_vcf:
+    output: s12_annotate_vcf/chr10.filt.annotated.vcf
+    output_csv: s12_annotate_vcf/snpEff.csv
+
+  s13_bgzip_index:
+    output_bg: s13_bgzip_index/chr10.filt.annotated.vcf.gz
+    output_tbi: s13_bgzip_index/chr10.filt.annotated.vcf.gz.tbi
